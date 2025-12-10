@@ -1,5 +1,5 @@
-import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+import Stripe from "npm:stripe@latest";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +14,7 @@ interface CreateUserRequest {
   date_of_birth?: string;
   address?: string;
   country?: string;
+  phone?: string;
 }
 
 Deno.serve(async (req) => {
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
     });
 
     const requestData: CreateUserRequest = await req.json();
-    const { email, name, nickname, date_of_birth, address, country } =
+    const { email, name, nickname, date_of_birth, address, country, phone } =
       requestData;
 
     // Strip whitespace from string fields
@@ -66,6 +67,7 @@ Deno.serve(async (req) => {
         date_of_birth,
         address,
         country: trimmedCountry,
+        phone,
         status: "inactive",
       })
       .select()
