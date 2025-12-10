@@ -146,4 +146,81 @@ POST `/create-user`
 Creates a new user with Stripe customer integration (documented above)
 
 ### create-group
-*(Coming soon)* Creates a new group with an admin user and member management
+Creates a new group with an admin user and automatic member management
+
+#### Endpoint
+POST `/create-group`
+
+#### Request Body
+```json
+{
+  "admin_user_id": "uuid-string",     // Required - Must be existing user ID
+  "name": "Group Name",                // Required
+  "description": "Group description",  // Optional
+  "status": "active"                   // Optional - Defaults to "active"
+}
+```
+
+#### Response (Success - 201)
+```json
+{
+  "success": true,
+  "group": {
+    "id": "uuid",
+    "admin_user_id": "uuid",
+    "name": "Group Name",
+    "description": "Group description",
+    "status": "active",
+    "created_at": "2025-12-10T..."
+  }
+}
+```
+
+#### Error Responses
+
+**400 Bad Request** - Missing required fields:
+```json
+{
+  "error": "admin_user_id and name are required"
+}
+```
+
+**400 Bad Request** - Invalid status:
+```json
+{
+  "error": "Invalid status. Must be one of: active, frozen, deleted"
+}
+```
+
+**404 Not Found** - Admin user doesn't exist:
+```json
+{
+  "error": "Admin user not found",
+  "details": "..."
+}
+```
+
+**500 Internal Server Error** - Database error:
+```json
+{
+  "error": "Failed to create group",
+  "details": "..."
+}
+```
+
+#### What It Does
+
+1. Validates that `admin_user_id` and `name` are provided
+2. Verifies the admin user exists in the database
+3. Validates the status value (if provided)
+4. Creates a new group record in the `groups` table
+5. Automatically adds the admin user to `group_members` table
+6. Returns the complete group object
+
+#### Notes
+
+- The group status defaults to `active`
+- Valid status values: `active`, `frozen`, `deleted`
+- Admin user is automatically added to the group members
+- If adding admin to group_members fails, the group creation is rolled back
+- Admin user must exist and have `active` or `inactive` status
