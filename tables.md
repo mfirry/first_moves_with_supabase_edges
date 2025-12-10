@@ -9,6 +9,7 @@ CREATE TABLE users (
   country VARCHAR(100),
   status VARCHAR(255) DEFAULT 'inactive', -- this can be either inactive, active, frozen, deleted
   stripe_customer_id VARCHAR(255) UNIQUE,
+  phone VARCHAR(255) UNIQUE,
   created_at TIMESTAMP DEFAULT NOW()
 );
 ```
