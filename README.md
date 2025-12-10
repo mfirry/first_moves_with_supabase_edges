@@ -1,12 +1,34 @@
-# Supabase Edge Function - Create User with Stripe Customer
+# Supabase Edge Functions with Stripe Integration
 
-This project contains a Supabase Edge Function that creates a user in your database and automatically creates a corresponding Stripe customer.
+This project contains Supabase Edge Functions for user and group management with Stripe integration.
 
 ## Prerequisites
 
 - Supabase project
 - Stripe account
 - Supabase CLI installed
+
+## Database Schema
+
+The project uses the following tables (see `tables.md` for complete SQL):
+
+### Users Table
+- Core user information (email, name, nickname, etc.)
+- User status: `inactive`, `active`, `frozen`, `deleted`
+- Stripe customer ID for payment integration
+- Unique constraints on email and phone
+
+### Groups Table
+- Group management with admin user
+- Group name (required) and description (optional)
+- Group status: `active`, `frozen`, `deleted`
+- Foreign key to users table for admin
+
+### Group Members Table
+- Junction table connecting users to groups
+- Composite primary key (group_id, user_id)
+- Tracks when users joined groups
+- Admin users should also be members of their groups
 
 ## Setup
 
@@ -15,8 +37,8 @@ This project contains a Supabase Edge Function that creates a user in your datab
    npm install -g supabase
    ```
 
-2. **Create the database table**:
-   Run the SQL from `tables.md` in your Supabase SQL Editor to create the users table.
+2. **Create the database tables**:
+   Run the SQL from `tables.md` in your Supabase SQL Editor to create the users, groups, and group_members tables.
 
 3. **Set up environment variables**:
    In your Supabase project dashboard, go to Edge Functions settings and add:
@@ -117,3 +139,11 @@ POST `/create-user`
 - The Stripe customer ID is stored in the `stripe_customer_id` field
 - The user ID is stored in Stripe customer metadata as `user_id`
 - If Stripe customer creation fails after user creation, the function returns an error but the user remains in the database
+
+## Available Edge Functions
+
+### create-user
+Creates a new user with Stripe customer integration (documented above)
+
+### create-group
+*(Coming soon)* Creates a new group with an admin user and member management
