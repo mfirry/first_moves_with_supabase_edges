@@ -145,6 +145,69 @@ POST `/create-user`
 ### create-user
 Creates a new user with Stripe customer integration (documented above)
 
+### create-user-with-setup-intent
+Creates a new user with Stripe customer integration and a SetupIntent for future off-session payments
+
+#### Endpoint
+POST `/create-user-with-setup-intent`
+
+#### Request Body
+```json
+{
+  "email": "user@example.com",      // Required
+  "name": "John Doe",                // Required
+  "nickname": "johnny",              // Optional
+  "date_of_birth": "1990-01-15",    // Optional (YYYY-MM-DD)
+  "address": "123 Main St",         // Optional
+  "country": "US"                   // Optional
+}
+```
+
+#### Response (Success - 201)
+```json
+{
+  "success": true,
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "nickname": "johnny",
+    "date_of_birth": "1990-01-15",
+    "address": "123 Main St",
+    "country": "US",
+    "status": "inactive",
+    "stripe_customer_id": "cus_xxxxx",
+    "created_at": "2025-12-10T..."
+  },
+  "stripe_customer_id": "cus_xxxxx",
+  "setup_intent": {
+    "id": "seti_xxxxx",
+    "client_secret": "seti_xxxxx_secret_xxxxx",
+    "status": "requires_payment_method"
+  }
+}
+```
+
+#### Error Responses
+Same as `create-user` function above.
+
+#### What It Does
+
+1. Validates that `email` and `name` are provided
+2. Creates a new user record in the `users` table
+3. Creates a Stripe customer with the provided information
+4. Creates a Stripe SetupIntent for off-session card payments
+5. Updates the user record with the Stripe customer ID
+6. Returns the complete user object with Stripe customer ID and SetupIntent details
+
+#### Notes
+
+- The user status defaults to `inactive`
+- The SetupIntent is configured with `payment_method_types: ['card']` and `usage: 'off_session'`
+- The `client_secret` returned in the response should be used on the frontend to complete the payment method setup
+- Off-session usage allows you to charge the customer when they're not actively using your app (e.g., subscriptions)
+- The SetupIntent will have status `requires_payment_method` initially
+
 ### create-group
 Creates a new group with an admin user and automatic member management
 
